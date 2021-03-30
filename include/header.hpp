@@ -6,77 +6,113 @@
 #include "iostream"
 
 template <typename T>
-class Stack
+class Stack {
+ private:
+  struct Cell {
+    T _value;            //поле с данными
+    Cell* _nextElement;  //указатель на следующий элемент
+   public:
+    Cell(T value = T(), Cell* nextElement = nullptr)
+        : _value{value}, _nextElement{nextElement} {}
+  };
+  Cell* _top;
+
+ public:
+  Stack(const Stack&) = delete;
+  Stack& operator = (const Stack&) = delete;
+
+  Stack() : _top(nullptr) {}
+
+  bool empty() { return (_top == nullptr); }
+
+  void push(T&& value) {
+    _top = new Cell {std::forward<T>(value),_top};
+  }
+  void push(const T& value) {
+    _top = new Cell {std::forward<T>(value),_top};
+  }
+  T head() { return _top->_value; }
+
+  void pop() {
+    if (empty()) {
+      std::cerr << ("Stack is empty!");
+      return;
+    }
+    Cell* temp = _top;  //запомнили удаляемый узел
+    _top =
+        _top->_nextElement;  //вершина сместилась на следующий узел
+    delete temp;
+  }
+
+  ~Stack() {
+    while (!empty()) {
+      Cell* temp = _top;  //запомнили удаляемый ячейку
+      _top =
+          _top->_nextElement;  //вершина сместилась на следующий ячейку
+      delete temp;
+    }
+  }
+};
+template <typename T>
+class Stack2
 {
  private:
   struct Cell
   {
-
-    T _value;
-    Cell* _nextElement;
+    T _value; //поле с данными
+    Cell* _nextElement; //указатель на следующий элемент
    public:
     Cell(T value = T(), Cell* nextElement = nullptr)
         :_value{value}, _nextElement{nextElement}{}
   };
-
   Cell* _top;
-  size_t _size;
-  Cell *topElement = new Cell();
 
  public:
+  Stack2(const Stack2&) = delete;
+  Stack2& operator = (const Stack2&) = delete;
 
-  Stack(const Stack&) = delete;
-  Stack operator=(const Stack&) = delete;
+  Stack2()
+      :_top(nullptr){}
 
-  Stack()
-      :_top(nullptr), _size(0){}
-
-  bool empty(){
-    return (_size == 0 && topElement);
+  template <typename ... Args>
+  void push_emplace(Args&&... value)
+  {
+    auto temp = T(std::forward<Args>(value)...);
+    _top = new Cell {std::move(temp),_top};
   }
 
-  size_t size(){
-    return _size;
+  bool empty(){
+    return (_top == nullptr);
   }
 
   void push(T&& value){
-    Cell * newElement = new Cell(value);
-    if(_size == 0){
-      topElement = newElement;
-    }
-    else{
-      newElement->_nextElement = std::move(newElement);
-      topElement = std::move(newElement);
-    }
-    _size++;
-  }
-  void push(const T& value){
-    Cell * newElement = new Cell(value);
-    if(_size == 0){
-      topElement = newElement;
-    }
-    else{
-      newElement->_nextElement = newElement;
-      topElement = newElement;
-    }
-    _size++;
-  }
-  T top(){
-    return topElement->value;
-  }
-  void pop(){
-    if(!empty()){
-      Cell* temp = topElement;
-      topElement = topElement->_nextElement;
-      delete temp;
-      _size--;
-    }
+    _top = new Cell {std::forward<T>(value),_top};
   }
 
-  ~Stack(){
-    while (!empty())
-      pop();
+  const T& head() const{
+    return _top->_value;
+  }
+
+  T pop(){
+    if(!_top) {
+      std::cerr << ("Stack is empty!");
+      return T();
+    }
+    Cell * deleter = _top; //запомнили удаляемый узел
+    T value = std::move(_top->_value); //запомнили значение, которое хотим вернуть
+    _top = deleter->_nextElement; //вершина сместилась на следующий узел
+    delete deleter;
+    return value;
+  }
+  ~Stack2() {
+    while (!empty()) {
+      Cell* temp = _top;  //запомнили удаляемый ячейку
+      _top =
+          _top->_nextElement;  //вершина сместилась на следующий ячейку
+      delete temp;
+    }
   }
 };
+
 
 #endif // INCLUDE_HEADER_HPP_
